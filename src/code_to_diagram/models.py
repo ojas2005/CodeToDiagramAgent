@@ -59,3 +59,22 @@ class Edge:
                 "label": self.label,
                 "evidence": [item.to_dict() for item in sorted(self.evidence)]}
 
+
+@dataclass
+class Diagram:
+    kind: str
+    nodes: Dict[str, Node] = field(default_factory=dict)
+    edges: Dict[Tuple[str, str, str, str], Edge] = field(default_factory=dict)
+    notes: List[str] = field(default_factory=list)
+
+    def add_node(self, id: str, label: str, kind: str,
+                 evidence: Optional[Evidence] = None, fields=None) -> Node:
+        if id not in self.nodes:
+            self.nodes[id] = Node(id, label, kind)
+        node = self.nodes[id]
+        node.add_evidence(evidence)
+        for value in fields or []:
+            if value not in node.fields:
+                node.fields.append(value)
+        return node
+
