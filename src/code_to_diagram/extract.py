@@ -57,3 +57,19 @@ def script_target(path: str, imported: str, files: Dict[str, str]) -> Optional[s
             return candidate
     return None
 
+
+def add_module(architecture: Architecture, path: str):
+    diagram = architecture.diagrams["components"]
+    suffix = PurePosixPath(path).suffix
+    kind = "frontend" if suffix in {".jsx", ".tsx"} else "module"
+    diagram.add_node("file:" + path, path, kind, evidence(path, 1))
+
+
+def add_dependency(architecture: Architecture, name: str, kind: str,
+                   path: str, line: int):
+    diagram = architecture.diagrams["dependencies"]
+    diagram.add_node("app", architecture.repository, "application")
+    target = "service:" + name.lower().replace(" ", "-")
+    diagram.add_node(target, name, kind, evidence(path, line))
+    diagram.add_edge("app", target, "uses", evidence=evidence(path, line))
+
