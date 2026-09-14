@@ -41,3 +41,36 @@ def decode(data: bytes) -> str:
         return ""
     return data.decode("utf-8", errors="replace")
 
+
+def read_worktree(root: Path, max_files: int = 400, max_bytes: int = 256000) -> SourceSnapshot:
+    root = Path(root).resolve()
+    if not root.is_dir() or max_files < 1 or max_bytes < 1:
+        raise DiagramError("Repository and scan limits must be valid")
+    files = {}
+    skipped = 0
+    for folder, directories, names in os.walk(root, followlinks=False):
+        directories[:] = sorted(name for name in directories if name not in SKIP_DIRS
+                                and not (Path(folder) / name).is_symlink())
+        for name in sorted(names):
+            path = Path(folder) / name
+            relative = path.relative_to(root).as_posix()
+            if not eligible(relative) or path.is_symlink() or not path.is_file():
+                continue
+            try:
+                if path.stat().st_size > max_bytes:
+                    skipped += 1
+                    continue
+                content = decode(path.read_bytes())
+            except OSError:
+                skipped += 1
+                continue
+            if not content:
+                continue
+            if len(files) >= max_files:
+                skipped += 1
+                continue
+            files[relative] = content
+    if not files:
+        raise DiagramError("No supported source files found")
+    return SourceSnapshot(root.name, "worktree", files, skipped)
+
