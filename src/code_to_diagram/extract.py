@@ -84,3 +84,23 @@ def add_api_route(architecture: Architecture, path: str, line: int,
     diagram.add_node(handler_id, "{} in {}".format(handler, path), "handler", ref)
     diagram.add_edge(route_id, handler_id, "handled by", evidence=ref)
 
+
+def python_imports(tree, path: str, architecture: Architecture, modules: Dict[str, str]):
+    components = architecture.diagrams["components"]
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            names = [alias.name for alias in node.names]
+        elif isinstance(node, ast.ImportFrom):
+            names = [relative_python_import(path, node.module or "", node.level)]
+        else:
+            continue
+        for name in names:
+            root = name.split(".")[0]
+            if root in DEPENDENCY_IMPORTS:
+                label, kind = DEPENDENCY_IMPORTS[root]
+                add_dependency(architecture, label, kind, path, node.lineno)
+            target = modules.get(name)
+            if target and target != path:
+                components.add_edge("file:" + path, "file:" + target, "imports",
+                                    evidence=evidence(path, node.lineno))
+
