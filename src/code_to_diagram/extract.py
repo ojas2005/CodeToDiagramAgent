@@ -209,3 +209,17 @@ def extract_script(path: str, content: str, architecture: Architecture,
     for match in SCRIPT_REQUEST.finditer(content):
         requests.append((path, line_number(content, match.start()), match.group(1)))
 
+
+def connect_requests(architecture: Architecture, requests: list):
+    api = architecture.diagrams["api"]
+    for path, line, url in requests:
+        route = url.split("?", 1)[0]
+        matches = [id for id, node in api.nodes.items() if node.kind == "endpoint"
+                   and id.endswith(":" + route)]
+        client = "client:" + path
+        api.add_node(client, path, "client", evidence(path, line))
+        for target in matches:
+            api.add_edge(client, target, "calls", evidence=evidence(path, line))
+        if not matches:
+            api.notes.append("Unmatched request in {}:{}: {}".format(path, line, url))
+
