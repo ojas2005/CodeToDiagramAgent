@@ -198,3 +198,14 @@ def script_imports(path: str, content: str, architecture: Architecture,
             if imported == key or imported.startswith(key + "/"):
                 add_dependency(architecture, label, kind, path, line)
 
+
+def extract_script(path: str, content: str, architecture: Architecture,
+                   files: Dict[str, str], requests: list):
+    script_imports(path, content, architecture, files)
+    for match in SCRIPT_ROUTE.finditer(content):
+        line = line_number(content, match.start())
+        add_api_route(architecture, path, line, match.group(1), match.group(2),
+                      PurePosixPath(path).stem)
+    for match in SCRIPT_REQUEST.finditer(content):
+        requests.append((path, line_number(content, match.start()), match.group(1)))
+
