@@ -88,3 +88,32 @@ def resolve_revision(repo: Path, revision: str) -> str:
         raise DiagramError("A valid Git revision is required")
     return git(repo, "rev-parse", "--verify", revision + "^{commit}").decode().strip()
 
+
+def read_revision(repo: Path, revision: str, max_files: int = 400,
+                  max_bytes: int = 256000) -> SourceSnapshot:
+    repo = Path(repo).resolve()
+    if not repo.is_dir() or max_files < 1 or max_bytes < 1:
+        raise DiagramError("Repository and scan limits must be valid")
+    commit = resolve_revision(repo, revision)
+    entries = git(repo, "ls-tree", "-rz", commit).split(b"\0")
+    files = {}
+    skipped = 0
+    for entry in entries:
+        if not entry or b"\t" not in entry:
+            continue
+        metadata, raw_path = entry.split(b"\t", 1)
+        mode = metadata.split(b" ", 1)[0]
+        path = raw_path.decode("utf-8", errors="replace")
+        if mode == b"120000" or not eligible(path):
+            continue
+        if len(files) >= max_files:
+            skipped += 1
+            continue
+        content = git(repo, "show", commit + ":" + path)
+        if len(content) > max_bytes or b"\0" in content:
+            skipped += 1
+            continue
+        files[path] = decode(content)
+    if not files:
+        raise DiagramError("No supported source files found at revision")
+    return SourceSnapshot(repo.name, commit, files, skipped)
