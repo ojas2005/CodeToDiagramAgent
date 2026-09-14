@@ -291,3 +291,33 @@ def extract_manifest(path: str, content: str, architecture: Architecture):
             line = next(i for i, value in enumerate(content.splitlines(), 1) if marker in value.lower())
             add_dependency(architecture, label, kind, path, line)
 
+
+def build_auth_sequence(snapshot: SourceSnapshot, architecture: Architecture):
+    auth = architecture.diagrams["auth"]
+    api = architecture.diagrams["api"]
+    routes = [node for node in api.nodes.values() if node.kind == "endpoint" and
+              any(word in node.label.lower() for word in ("login", "auth", "token", "session"))]
+    if not routes:
+        auth.notes.append("No authentication endpoint was detected")
+        return
+    route = routes[0]
+    ref = route.evidence[0]
+    auth.add_node("client", "Client", "actor")
+    auth.add_node("api", route.label, "api", ref)
+    auth.add_edge("client", "api", "request", route.label, ref)
+    text = snapshot.files.get(ref.path, "")
+    helper = re.search(r"\b(authenticate|verify_password|check_password)\s*\(", text)
+    if helper:
+        line = line_number(text, helper.start())
+        auth.add_node("auth", "Authentication logic", "service", evidence(ref.path, line))
+        auth.add_edge("api", "auth", "call", helper.group(1), evidence(ref.path, line))
+        auth.add_edge("auth", "api", "result", "authentication result", evidence(ref.path, line))
+    if re.search(r"\b(create_session|create_token|jwt\.encode)\s*\(", text):
+        match = re.search(r"\b(create_session|create_token|jwt\.encode)\s*\(", text)
+        line = line_number(text, match.start())
+        auth.add_node("token", "Token/session helper", "service", evidence(ref.path, line))
+        auth.add_edge("api", "token", "call", match.group(1), evidence(ref.path, line))
+        auth.add_edge("token", "api", "result", "token/session", evidence(ref.path, line))
+    auth.add_edge("api", "client", "response", "HTTP response", ref)
+    auth.notes.append("Sequence is inferred from static call sites; branch order and runtime behavior require source review")
+
