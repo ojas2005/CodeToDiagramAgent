@@ -104,3 +104,19 @@ def python_imports(tree, path: str, architecture: Architecture, modules: Dict[st
                 components.add_edge("file:" + path, "file:" + target, "imports",
                                     evidence=evidence(path, node.lineno))
 
+
+def python_routes(tree, path: str, architecture: Architecture):
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        for decorator in node.decorator_list:
+            if not isinstance(decorator, ast.Call) or not isinstance(decorator.func, ast.Attribute):
+                continue
+            method = decorator.func.attr.lower()
+            if method not in HTTP_METHODS or not decorator.args:
+                continue
+            route = decorator.args[0]
+            if isinstance(route, ast.Constant) and isinstance(route.value, str):
+                add_api_route(architecture, path, decorator.lineno, method,
+                              route.value, node.name)
+
