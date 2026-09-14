@@ -73,3 +73,14 @@ def add_dependency(architecture: Architecture, name: str, kind: str,
     diagram.add_node(target, name, kind, evidence(path, line))
     diagram.add_edge("app", target, "uses", evidence=evidence(path, line))
 
+
+def add_api_route(architecture: Architecture, path: str, line: int,
+                  method: str, route: str, handler: str):
+    diagram = architecture.diagrams["api"]
+    route_id = "route:{}:{}".format(method.upper(), route)
+    handler_id = "handler:{}:{}".format(path, handler)
+    ref = evidence(path, line)
+    diagram.add_node(route_id, "{} {}".format(method.upper(), route), "endpoint", ref)
+    diagram.add_node(handler_id, "{} in {}".format(handler, path), "handler", ref)
+    diagram.add_edge(route_id, handler_id, "handled by", evidence=ref)
+
