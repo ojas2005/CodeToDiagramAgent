@@ -223,3 +223,29 @@ def connect_requests(architecture: Architecture, requests: list):
         if not matches:
             api.notes.append("Unmatched request in {}:{}: {}".format(path, line, url))
 
+
+def extract_prisma(path: str, content: str, architecture: Architecture):
+    er = architecture.diagrams["er"]
+    current = None
+    for line, raw in enumerate(content.splitlines(), 1):
+        opening = re.match(r"\s*model\s+(\w+)\s*\{", raw)
+        if opening:
+            current = opening.group(1)
+            er.add_node("table:" + current, current, "model", evidence(path, line))
+            continue
+        if current and raw.strip().startswith("}"):
+            current = None
+            continue
+        if not current:
+            continue
+        field = re.match(r"\s*(\w+)\s+(\w+)(?:\[\])?\??\s*(.*)", raw)
+        if not field:
+            continue
+        name, type_name, rest = field.groups()
+        er.add_node("table:" + current, current, "model", evidence(path, line), [name + ": " + type_name])
+        if "@relation" in rest or type_name in [node.label for node in er.nodes.values()]:
+            if type_name != current and type_name not in {"String", "Int", "DateTime", "Boolean", "Float", "Decimal", "Json", "Bytes"}:
+                target = "table:" + type_name
+                er.add_node(target, type_name, "model", evidence(path, line))
+                er.add_edge("table:" + current, target, "relation", evidence=evidence(path, line))
+
