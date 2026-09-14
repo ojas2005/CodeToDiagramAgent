@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "code-to-diagram-agent"
+version = "0.1.0"
+description = "Evidence-linked architecture diagrams from source repositories"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+
+[project.scripts]
+code-to-diagram = "code_to_diagram.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
