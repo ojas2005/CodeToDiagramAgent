@@ -158,3 +158,15 @@ def python_tables(tree, path: str, architecture: Architecture):
             er.add_node(target_id, target, "table", evidence(path, line))
             er.add_edge(table_id, target_id, "foreign key", evidence=evidence(path, line))
 
+
+def extract_python(path: str, content: str, architecture: Architecture,
+                   modules: Dict[str, str]):
+    try:
+        tree = ast.parse(content, filename=path)
+    except SyntaxError:
+        architecture.diagrams["components"].notes.append("Could not parse " + path)
+        return
+    python_imports(tree, path, architecture, modules)
+    python_routes(tree, path, architecture)
+    python_tables(tree, path, architecture)
+
