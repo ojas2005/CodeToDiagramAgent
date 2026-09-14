@@ -120,3 +120,41 @@ def python_routes(tree, path: str, architecture: Architecture):
                 add_api_route(architecture, path, decorator.lineno, method,
                               route.value, node.name)
 
+
+def python_tables(tree, path: str, architecture: Architecture):
+    er = architecture.diagrams["er"]
+    for klass in [node for node in tree.body if isinstance(node, ast.ClassDef)]:
+        table = None
+        for statement in klass.body:
+            if isinstance(statement, ast.Assign) and any(
+                    isinstance(target, ast.Name) and target.id == "__tablename__"
+                    for target in statement.targets):
+                if isinstance(statement.value, ast.Constant) and isinstance(statement.value.value, str):
+                    table = statement.value.value
+        if not table:
+            continue
+        table_id = "table:" + table
+        fields = []
+        relationships = []
+        for statement in klass.body:
+            if isinstance(statement, (ast.Assign, ast.AnnAssign)):
+                targets = statement.targets if isinstance(statement, ast.Assign) else [statement.target]
+                value = statement.value
+                if not value or not isinstance(value, ast.Call):
+                    continue
+                call_name = getattr(value.func, "id", getattr(value.func, "attr", ""))
+                if call_name not in {"Column", "mapped_column", "relationship"}:
+                    continue
+                for target in targets:
+                    if isinstance(target, ast.Name):
+                        fields.append(target.id)
+                for sub in ast.walk(value):
+                    if isinstance(sub, ast.Call) and getattr(sub.func, "id", "") == "ForeignKey":
+                        if sub.args and isinstance(sub.args[0], ast.Constant) and isinstance(sub.args[0].value, str):
+                            relationships.append((sub.args[0].value.split(".")[0], statement.lineno))
+        er.add_node(table_id, table, "table", evidence(path, klass.lineno), fields)
+        for target, line in relationships:
+            target_id = "table:" + target
+            er.add_node(target_id, target, "table", evidence(path, line))
+            er.add_edge(table_id, target_id, "foreign key", evidence=evidence(path, line))
+
