@@ -74,3 +74,17 @@ def read_worktree(root: Path, max_files: int = 400, max_bytes: int = 256000) -> 
         raise DiagramError("No supported source files found")
     return SourceSnapshot(root.name, "worktree", files, skipped)
 
+
+def git(repo: Path, *args) -> bytes:
+    result = subprocess.run(["git", "-C", str(repo), *args], capture_output=True)
+    if result.returncode:
+        raise DiagramError("Git command failed: {}".format(
+            result.stderr.decode("utf-8", errors="replace").strip()[:200]))
+    return result.stdout
+
+
+def resolve_revision(repo: Path, revision: str) -> str:
+    if not revision or revision.startswith("-"):
+        raise DiagramError("A valid Git revision is required")
+    return git(repo, "rev-parse", "--verify", revision + "^{commit}").decode().strip()
+
