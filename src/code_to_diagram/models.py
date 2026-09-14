@@ -94,3 +94,14 @@ class Diagram:
                 "edges": [self.edges[key].to_dict() for key in sorted(self.edges)],
                 "notes": list(self.notes)}
 
+
+@dataclass
+class Architecture:
+    repository: str
+    revision: str
+    diagrams: Dict[str, Diagram] = field(default_factory=lambda: {
+        kind: Diagram(kind) for kind in DIAGRAM_TYPES})
+
+    def to_dict(self):
+        return {"repository": self.repository, "revision": self.revision,
+                "diagrams": {kind: self.diagrams[kind].to_dict() for kind in DIAGRAM_TYPES}}
