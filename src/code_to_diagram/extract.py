@@ -170,3 +170,16 @@ def extract_python(path: str, content: str, architecture: Architecture,
     python_routes(tree, path, architecture)
     python_tables(tree, path, architecture)
 
+
+SCRIPT_IMPORT = re.compile(r"(?:\bfrom\s*|\brequire\s*\(\s*)['\"]([^'\"]+)['\"]")
+SCRIPT_ROUTE = re.compile(r"\b(?:app|router)\.(get|post|put|patch|delete)\s*\(\s*['\"]([^'\"]+)['\"]")
+SCRIPT_REQUEST = re.compile(r"\b(?:fetch|axios\.(?:get|post|put|patch|delete))\s*\(\s*['\"]([^'\"]+)['\"]")
+SCRIPT_SERVICES = {"redis": ("Redis", "cache"), "pg": ("PostgreSQL", "database"),
+                   "@prisma/client": ("Database", "database"),
+                   "openai": ("OpenAI API", "external API"),
+                   "stripe": ("Stripe API", "external API")}
+
+
+def line_number(content: str, offset: int) -> int:
+    return content.count("\n", 0, offset) + 1
+
