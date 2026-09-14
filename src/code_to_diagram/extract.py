@@ -183,3 +183,18 @@ SCRIPT_SERVICES = {"redis": ("Redis", "cache"), "pg": ("PostgreSQL", "database")
 def line_number(content: str, offset: int) -> int:
     return content.count("\n", 0, offset) + 1
 
+
+def script_imports(path: str, content: str, architecture: Architecture,
+                   files: Dict[str, str]):
+    components = architecture.diagrams["components"]
+    for match in SCRIPT_IMPORT.finditer(content):
+        imported = match.group(1)
+        line = line_number(content, match.start())
+        target = script_target(path, imported, files)
+        if target and target != path:
+            components.add_edge("file:" + path, "file:" + target, "imports",
+                                evidence=evidence(path, line))
+        for key, (label, kind) in SCRIPT_SERVICES.items():
+            if imported == key or imported.startswith(key + "/"):
+                add_dependency(architecture, label, kind, path, line)
+
