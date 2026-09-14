@@ -78,3 +78,19 @@ class Diagram:
                 node.fields.append(value)
         return node
 
+    def add_edge(self, source: str, target: str, kind: str,
+                 label: str = "", evidence: Optional[Evidence] = None) -> Edge:
+        if source not in self.nodes or target not in self.nodes:
+            raise DiagramError("Edge endpoints must exist before adding a relationship")
+        key = source, target, kind, label
+        if key not in self.edges:
+            self.edges[key] = Edge(source, target, kind, label)
+        self.edges[key].add_evidence(evidence)
+        return self.edges[key]
+
+    def to_dict(self):
+        return {"kind": self.kind,
+                "nodes": [self.nodes[key].to_dict() for key in sorted(self.nodes)],
+                "edges": [self.edges[key].to_dict() for key in sorted(self.edges)],
+                "notes": list(self.notes)}
+
