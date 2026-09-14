@@ -37,3 +37,25 @@ class Node:
                 "fields": sorted(set(self.fields)),
                 "evidence": [item.to_dict() for item in sorted(self.evidence)]}
 
+
+@dataclass
+class Edge:
+    source: str
+    target: str
+    kind: str
+    label: str = ""
+    evidence: List[Evidence] = field(default_factory=list)
+
+    @property
+    def key(self) -> Tuple[str, str, str, str]:
+        return self.source, self.target, self.kind, self.label
+
+    def add_evidence(self, item: Optional[Evidence]):
+        if item is not None and item not in self.evidence:
+            self.evidence.append(item)
+
+    def to_dict(self):
+        return {"source": self.source, "target": self.target, "kind": self.kind,
+                "label": self.label,
+                "evidence": [item.to_dict() for item in sorted(self.evidence)]}
+
