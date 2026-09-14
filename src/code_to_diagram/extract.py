@@ -249,3 +249,24 @@ def extract_prisma(path: str, content: str, architecture: Architecture):
                 er.add_node(target, type_name, "model", evidence(path, line))
                 er.add_edge("table:" + current, target, "relation", evidence=evidence(path, line))
 
+
+def extract_sql(path: str, content: str, architecture: Architecture):
+    er = architecture.diagrams["er"]
+    for match in re.finditer(r"CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?[\"`]?([\w.]+)[\"`]?\s*\((.*?)\)\s*;",
+                             content, re.IGNORECASE | re.DOTALL):
+        table = match.group(1)
+        start_line = line_number(content, match.start())
+        fields = []
+        for raw in match.group(2).splitlines():
+            column = re.match(r"\s*[\"`]?([A-Za-z_]\w*)[\"`]?\s+(\w+)", raw)
+            if column and column.group(1).upper() not in {"PRIMARY", "FOREIGN", "CONSTRAINT", "UNIQUE", "CHECK"}:
+                fields.append(column.group(1) + ": " + column.group(2))
+        source = "table:" + table
+        er.add_node(source, table, "table", evidence(path, start_line), fields)
+        for foreign in re.finditer(r"REFERENCES\s+[\"`]?([\w.]+)", match.group(2), re.IGNORECASE):
+            target_name = foreign.group(1)
+            target = "table:" + target_name
+            ref_line = line_number(content, match.start(2) + foreign.start())
+            er.add_node(target, target_name, "table", evidence(path, ref_line))
+            er.add_edge(source, target, "foreign key", evidence=evidence(path, ref_line))
+
