@@ -321,3 +321,33 @@ def build_auth_sequence(snapshot: SourceSnapshot, architecture: Architecture):
     auth.add_edge("api", "client", "response", "HTTP response", ref)
     auth.notes.append("Sequence is inferred from static call sites; branch order and runtime behavior require source review")
 
+
+def build_architecture(snapshot: SourceSnapshot) -> Architecture:
+    architecture = Architecture(snapshot.name, snapshot.revision)
+    files = snapshot.files
+    modules = module_index(files)
+    requests = []
+    for path in sorted(files):
+        if PurePosixPath(path).suffix in CODE_SUFFIXES:
+            add_module(architecture, path)
+    for path, content in sorted(files.items()):
+        suffix = PurePosixPath(path).suffix
+        if suffix == ".py":
+            extract_python(path, content, architecture, modules)
+        elif suffix in {".js", ".jsx", ".ts", ".tsx"}:
+            extract_script(path, content, architecture, files, requests)
+        elif suffix == ".prisma":
+            extract_prisma(path, content, architecture)
+        elif suffix == ".sql":
+            extract_sql(path, content, architecture)
+        if PurePosixPath(path).name in {"package.json", "requirements.txt", ".env.example"} or suffix in {".yaml", ".yml"}:
+            extract_manifest(path, content, architecture)
+    connect_requests(architecture, requests)
+    build_auth_sequence(snapshot, architecture)
+    for kind, diagram in architecture.diagrams.items():
+        if not diagram.nodes:
+            diagram.notes.append("No {} evidence was detected in the selected files".format(kind))
+    if snapshot.skipped:
+        architecture.diagrams["components"].notes.append(
+            "{} supported files exceeded scan limits or could not be read".format(snapshot.skipped))
+    return architecture
