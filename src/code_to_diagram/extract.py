@@ -270,3 +270,24 @@ def extract_sql(path: str, content: str, architecture: Architecture):
             er.add_node(target, target_name, "table", evidence(path, ref_line))
             er.add_edge(source, target, "foreign key", evidence=evidence(path, ref_line))
 
+
+def extract_manifest(path: str, content: str, architecture: Architecture):
+    lower = content.lower()
+    if path.endswith("package.json"):
+        try:
+            package = json.loads(content)
+        except json.JSONDecodeError:
+            return
+        dependencies = {**package.get("dependencies", {}), **package.get("devDependencies", {})}
+        for name, (label, kind) in SCRIPT_SERVICES.items():
+            if name in dependencies:
+                add_dependency(architecture, label, kind, path, 1)
+    for marker, label, kind in [
+        ("postgresql://", "PostgreSQL", "database"),
+        ("postgres://", "PostgreSQL", "database"),
+        ("redis://", "Redis", "cache"),
+    ]:
+        if marker in lower:
+            line = next(i for i, value in enumerate(content.splitlines(), 1) if marker in value.lower())
+            add_dependency(architecture, label, kind, path, line)
+
