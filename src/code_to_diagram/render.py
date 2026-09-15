@@ -99,3 +99,13 @@ def render_markdown(diagram: Diagram, source_prefix: str = ".") -> str:
         lines.extend("- " + note for note in diagram.notes)
     return "\n".join(lines) + "\n"
 
+
+def write_diagrams(architecture: Architecture, out_dir: Path, source_root: Path):
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    prefix = os.path.relpath(Path(source_root).resolve(), out_dir.resolve())
+    for kind, diagram in architecture.diagrams.items():
+        (out_dir / (kind + ".mmd")).write_text(render_mermaid(diagram), encoding="utf-8")
+        (out_dir / (kind + ".md")).write_text(render_markdown(diagram, prefix), encoding="utf-8")
+    (out_dir / "architecture.json").write_text(
+        json.dumps(architecture.to_dict(), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
