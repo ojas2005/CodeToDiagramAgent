@@ -1,0 +1,11 @@
+sequenceDiagram
+  participant n1 as Client
+  participant n2 as POST /login
+  participant n3 as Authentication logic
+  participant n4 as Token/session helper
+  n1->>n2: POST /login
+  n2->>n3: authenticate
+  n3->>n2: authentication result
+  n2->>n4: create_session
+  n4->>n2: token/session
+  n2->>n1: HTTP response

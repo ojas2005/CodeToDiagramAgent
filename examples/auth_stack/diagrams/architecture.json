@@ -1,0 +1,489 @@
+{
+  "repository": "auth_stack",
+  "revision": "worktree",
+  "diagrams": {
+    "components": {
+      "kind": "components",
+      "nodes": [
+        {
+          "id": "file:backend/app/auth.py",
+          "label": "backend/app/auth.py",
+          "kind": "module",
+          "fields": [],
+          "evidence": [
+            {
+              "path": "backend/app/auth.py",
+              "line": 1,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "file:backend/app/db.py",
+          "label": "backend/app/db.py",
+          "kind": "module",
+          "fields": [],
+          "evidence": [
+            {
+              "path": "backend/app/db.py",
+              "line": 1,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "file:backend/app/models.py",
+          "label": "backend/app/models.py",
+          "kind": "module",
+          "fields": [],
+          "evidence": [
+            {
+              "path": "backend/app/models.py",
+              "line": 1,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "file:backend/app/routes.py",
+          "label": "backend/app/routes.py",
+          "kind": "module",
+          "fields": [],
+          "evidence": [
+            {
+              "path": "backend/app/routes.py",
+              "line": 1,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "file:frontend/src/Login.tsx",
+          "label": "frontend/src/Login.tsx",
+          "kind": "frontend",
+          "fields": [],
+          "evidence": [
+            {
+              "path": "frontend/src/Login.tsx",
+              "line": 1,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "file:frontend/src/errors.ts",
+          "label": "frontend/src/errors.ts",
+          "kind": "module",
+          "fields": [],
+          "evidence": [
+            {
+              "path": "frontend/src/errors.ts",
+              "line": 1,
+              "detail": ""
+            }
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "source": "file:backend/app/auth.py",
+          "target": "file:backend/app/db.py",
+          "kind": "imports",
+          "label": "",
+          "evidence": [
+            {
+              "path": "backend/app/auth.py",
+              "line": 1,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "source": "file:backend/app/routes.py",
+          "target": "file:backend/app/auth.py",
+          "kind": "imports",
+          "label": "",
+          "evidence": [
+            {
+              "path": "backend/app/routes.py",
+              "line": 2,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "source": "file:frontend/src/Login.tsx",
+          "target": "file:frontend/src/errors.ts",
+          "kind": "imports",
+          "label": "",
+          "evidence": [
+            {
+              "path": "frontend/src/Login.tsx",
+              "line": 2,
+              "detail": ""
+            }
+          ]
+        }
+      ],
+      "notes": []
+    },
+    "api": {
+      "kind": "api",
+      "nodes": [
+        {
+          "id": "client:frontend/src/Login.tsx",
+          "label": "frontend/src/Login.tsx",
+          "kind": "client",
+          "fields": [],
+          "evidence": [
+            {
+              "path": "frontend/src/Login.tsx",
+              "line": 6,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "handler:backend/app/routes.py:login",
+          "label": "login in backend/app/routes.py",
+          "kind": "handler",
+          "fields": [],
+          "evidence": [
+            {
+              "path": "backend/app/routes.py",
+              "line": 7,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "route:POST:/login",
+          "label": "POST /login",
+          "kind": "endpoint",
+          "fields": [],
+          "evidence": [
+            {
+              "path": "backend/app/routes.py",
+              "line": 7,
+              "detail": ""
+            }
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "source": "client:frontend/src/Login.tsx",
+          "target": "route:POST:/login",
+          "kind": "calls",
+          "label": "",
+          "evidence": [
+            {
+              "path": "frontend/src/Login.tsx",
+              "line": 6,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "source": "route:POST:/login",
+          "target": "handler:backend/app/routes.py:login",
+          "kind": "handled by",
+          "label": "",
+          "evidence": [
+            {
+              "path": "backend/app/routes.py",
+              "line": 7,
+              "detail": ""
+            }
+          ]
+        }
+      ],
+      "notes": []
+    },
+    "er": {
+      "kind": "er",
+      "nodes": [
+        {
+          "id": "table:sessions",
+          "label": "sessions",
+          "kind": "table",
+          "fields": [
+            "id: Integer",
+            "user_id: Integer"
+          ],
+          "evidence": [
+            {
+              "path": "backend/app/models.py",
+              "line": 10,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "table:users",
+          "label": "users",
+          "kind": "table",
+          "fields": [
+            "id: Integer",
+            "username: String"
+          ],
+          "evidence": [
+            {
+              "path": "backend/app/models.py",
+              "line": 4,
+              "detail": ""
+            },
+            {
+              "path": "backend/app/models.py",
+              "line": 13,
+              "detail": ""
+            }
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "source": "table:sessions",
+          "target": "table:users",
+          "kind": "foreign key",
+          "label": "",
+          "evidence": [
+            {
+              "path": "backend/app/models.py",
+              "line": 13,
+              "detail": ""
+            }
+          ]
+        }
+      ],
+      "notes": []
+    },
+    "auth": {
+      "kind": "auth",
+      "nodes": [
+        {
+          "id": "api",
+          "label": "POST /login",
+          "kind": "api",
+          "fields": [],
+          "evidence": [
+            {
+              "path": "backend/app/routes.py",
+              "line": 7,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "auth",
+          "label": "Authentication logic",
+          "kind": "service",
+          "fields": [],
+          "evidence": [
+            {
+              "path": "backend/app/routes.py",
+              "line": 9,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "client",
+          "label": "Client",
+          "kind": "actor",
+          "fields": [],
+          "evidence": []
+        },
+        {
+          "id": "token",
+          "label": "Token/session helper",
+          "kind": "service",
+          "fields": [],
+          "evidence": [
+            {
+              "path": "backend/app/routes.py",
+              "line": 12,
+              "detail": ""
+            }
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "source": "api",
+          "target": "auth",
+          "kind": "call",
+          "label": "authenticate",
+          "evidence": [
+            {
+              "path": "backend/app/routes.py",
+              "line": 9,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "source": "api",
+          "target": "client",
+          "kind": "response",
+          "label": "HTTP response",
+          "evidence": [
+            {
+              "path": "backend/app/routes.py",
+              "line": 7,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "source": "api",
+          "target": "token",
+          "kind": "call",
+          "label": "create_session",
+          "evidence": [
+            {
+              "path": "backend/app/routes.py",
+              "line": 12,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "source": "auth",
+          "target": "api",
+          "kind": "result",
+          "label": "authentication result",
+          "evidence": [
+            {
+              "path": "backend/app/routes.py",
+              "line": 9,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "source": "client",
+          "target": "api",
+          "kind": "request",
+          "label": "POST /login",
+          "evidence": [
+            {
+              "path": "backend/app/routes.py",
+              "line": 7,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "source": "token",
+          "target": "api",
+          "kind": "result",
+          "label": "token/session",
+          "evidence": [
+            {
+              "path": "backend/app/routes.py",
+              "line": 12,
+              "detail": ""
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Sequence is inferred from static call sites; branch order and runtime behavior require source review"
+      ]
+    },
+    "dependencies": {
+      "kind": "dependencies",
+      "nodes": [
+        {
+          "id": "app",
+          "label": "auth_stack",
+          "kind": "application",
+          "fields": [],
+          "evidence": []
+        },
+        {
+          "id": "service:database",
+          "label": "Database",
+          "kind": "database",
+          "fields": [],
+          "evidence": [
+            {
+              "path": "backend/app/models.py",
+              "line": 1,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "service:postgresql",
+          "label": "PostgreSQL",
+          "kind": "database",
+          "fields": [],
+          "evidence": [
+            {
+              "path": "backend/.env.example",
+              "line": 1,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "service:redis",
+          "label": "Redis",
+          "kind": "cache",
+          "fields": [],
+          "evidence": [
+            {
+              "path": "backend/.env.example",
+              "line": 2,
+              "detail": ""
+            }
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "source": "app",
+          "target": "service:database",
+          "kind": "uses",
+          "label": "",
+          "evidence": [
+            {
+              "path": "backend/app/models.py",
+              "line": 1,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "source": "app",
+          "target": "service:postgresql",
+          "kind": "uses",
+          "label": "",
+          "evidence": [
+            {
+              "path": "backend/.env.example",
+              "line": 1,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "source": "app",
+          "target": "service:redis",
+          "kind": "uses",
+          "label": "",
+          "evidence": [
+            {
+              "path": "backend/.env.example",
+              "line": 2,
+              "detail": ""
+            }
+          ]
+        }
+      ],
+      "notes": []
+    }
+  }
+}

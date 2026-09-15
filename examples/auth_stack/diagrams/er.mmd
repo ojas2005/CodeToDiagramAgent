@@ -1,0 +1,10 @@
+erDiagram
+  sessions {
+    Integer id
+    Integer user_id
+  }
+  users {
+    Integer id
+    String username
+  }
+  sessions }o--|| users : "foreign key"

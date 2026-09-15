@@ -1,0 +1,6 @@
+flowchart LR
+  n1["frontend/src/Login.tsx"]
+  n2["login in backend/app/routes.py"]
+  n3["POST /login"]
+  n1 -->|calls| n3
+  n3 -->|handled by| n2

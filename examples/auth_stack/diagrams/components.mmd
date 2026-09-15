@@ -1,0 +1,10 @@
+flowchart LR
+  n1["backend/app/auth.py"]
+  n2["backend/app/db.py"]
+  n3["backend/app/models.py"]
+  n4["backend/app/routes.py"]
+  n5["frontend/src/Login.tsx"]
+  n6["frontend/src/errors.ts"]
+  n1 -->|imports| n2
+  n4 -->|imports| n1
+  n5 -->|imports| n6

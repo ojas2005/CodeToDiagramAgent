@@ -25,7 +25,7 @@ def render_flowchart(diagram: Diagram) -> str:
         lines.append('  {}["{}"]'.format(identifiers[key], safe_label(node.label)))
     for key in sorted(diagram.edges):
         edge = diagram.edges[key]
-        label = ' |{}|'.format(safe_label(edge.label or edge.kind))
+        label = '|{}|'.format(safe_label(edge.label or edge.kind))
         lines.append('  {} -->{} {}'.format(identifiers[edge.source], label,
                                            identifiers[edge.target]))
     if not diagram.nodes:

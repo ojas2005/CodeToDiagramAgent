@@ -145,9 +145,12 @@ def python_tables(tree, path: str, architecture: Architecture):
                 call_name = getattr(value.func, "id", getattr(value.func, "attr", ""))
                 if call_name not in {"Column", "mapped_column", "relationship"}:
                     continue
+                field_type = "unknown"
+                if value.args:
+                    field_type = getattr(value.args[0], "id", getattr(value.args[0], "attr", "unknown"))
                 for target in targets:
                     if isinstance(target, ast.Name):
-                        fields.append(target.id)
+                        fields.append(target.id + ": " + field_type)
                 for sub in ast.walk(value):
                     if isinstance(sub, ast.Call) and getattr(sub.func, "id", "") == "ForeignKey":
                         if sub.args and isinstance(sub.args[0], ast.Constant) and isinstance(sub.args[0].value, str):
