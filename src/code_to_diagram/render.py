@@ -78,3 +78,24 @@ def render_mermaid(diagram: Diagram) -> str:
         return render_sequence(diagram)
     return render_flowchart(diagram)
 
+
+def render_markdown(diagram: Diagram, source_prefix: str = ".") -> str:
+    title = {"components": "Component diagram", "api": "API interactions",
+             "er": "Database ER diagram", "auth": "Authentication sequence",
+             "dependencies": "Service dependencies"}[diagram.kind]
+    lines = ["# " + title, "", "```mermaid", render_mermaid(diagram).rstrip(), "```", "",
+             "## Evidence", ""]
+    refs = {item for node in diagram.nodes.values() for item in node.evidence}
+    refs.update(item for edge in diagram.edges.values() for item in edge.evidence)
+    for ref in sorted(refs):
+        relative = Path(source_prefix) / ref.path
+        link = quote(relative.as_posix(), safe="/.") + "#L{}".format(ref.line)
+        lines.append("- [{}:{}]({}){}".format(ref.path, ref.line, link,
+                     " — " + ref.detail if ref.detail else ""))
+    if not refs:
+        lines.append("- No source references found.")
+    if diagram.notes:
+        lines.extend(["", "## Limits", ""])
+        lines.extend("- " + note for note in diagram.notes)
+    return "\n".join(lines) + "\n"
+
