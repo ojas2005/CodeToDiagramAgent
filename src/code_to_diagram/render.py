@@ -57,3 +57,24 @@ def render_er(diagram: Diagram) -> str:
         lines.append("  %% No table or model evidence detected")
     return "\n".join(lines) + "\n"
 
+
+def render_sequence(diagram: Diagram) -> str:
+    lines = ["sequenceDiagram"]
+    identifiers = {key: mermaid_id(index) for index, key in enumerate(diagram.nodes, 1)}
+    for key, node in diagram.nodes.items():
+        lines.append('  participant {} as {}'.format(identifiers[key], safe_label(node.label)))
+    for edge in diagram.edges.values():
+        lines.append('  {}->>{}: {}'.format(identifiers[edge.source], identifiers[edge.target],
+                                           safe_label(edge.label or edge.kind)))
+    if not diagram.nodes:
+        lines.append("  %% No authentication sequence evidence detected")
+    return "\n".join(lines) + "\n"
+
+
+def render_mermaid(diagram: Diagram) -> str:
+    if diagram.kind == "er":
+        return render_er(diagram)
+    if diagram.kind == "auth":
+        return render_sequence(diagram)
+    return render_flowchart(diagram)
+
