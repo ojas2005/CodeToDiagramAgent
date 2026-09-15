@@ -32,3 +32,14 @@ def parser():
     diff.add_argument("--max-bytes", type=int, default=256000)
     return top
 
+
+def generate(args):
+    repo = args.repo.resolve()
+    snapshot = (read_revision(repo, args.revision, args.max_files, args.max_bytes)
+                if args.revision else read_worktree(repo, args.max_files, args.max_bytes))
+    architecture = build_architecture(snapshot)
+    out = args.out or repo / "docs" / "diagrams"
+    write_diagrams(architecture, out, repo)
+    print("Wrote five diagrams to {}".format(out))
+    return 0
+
