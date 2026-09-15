@@ -55,3 +55,15 @@ def diff_revisions(args):
     print("Updated {} diagrams in {}".format(len(updated), out))
     return 0
 
+
+def main(argv=None):
+    args = parser().parse_args(argv)
+    try:
+        return generate(args) if args.command == "generate" else diff_revisions(args)
+    except (DiagramError, OSError) as exc:
+        print("code-to-diagram: {}".format(exc), file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
