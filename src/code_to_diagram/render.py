@@ -40,7 +40,7 @@ def er_id(value: str) -> str:
 
 def render_er(diagram: Diagram) -> str:
     lines = ["erDiagram"]
-    identifiers = {key: er_id(key.removeprefix("table:")) for key in diagram.nodes}
+    identifiers = {key: er_id(key[6:] if key.startswith("table:") else key) for key in diagram.nodes}
     for key in sorted(diagram.nodes):
         node = diagram.nodes[key]
         lines.append("  {} {{".format(identifiers[key]))
