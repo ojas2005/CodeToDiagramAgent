@@ -51,3 +51,26 @@ def compare(base: Architecture, head: Architecture) -> Dict[str, DiagramChange]:
             [edge_label(old.edges[key]) for key in sorted(old_edges - new_edges)])
     return changes
 
+
+def render_change_report(base: Architecture, head: Architecture,
+                         changes: Dict[str, DiagramChange]) -> str:
+    lines = ["# Architecture changes", "", "Base: `{}`".format(base.revision),
+             "Head: `{}`".format(head.revision), ""]
+    for kind in DIAGRAM_TYPES:
+        item = changes[kind]
+        lines.extend(["## " + kind.title(), ""])
+        if not item.changed:
+            lines.extend(["No detected structural changes.", ""])
+            continue
+        for label, values in (("Added nodes", item.added_nodes),
+                              ("Removed nodes", item.removed_nodes),
+                              ("Changed nodes", item.changed_nodes),
+                              ("Added relationships", item.added_edges),
+                              ("Removed relationships", item.removed_edges)):
+            if values:
+                lines.append("### " + label)
+                lines.extend("- `" + value + "`" for value in values)
+                lines.append("")
+    lines.append("Changes reflect detected structure; review the source for behavior changes.")
+    return "\n".join(lines) + "\n"
+
