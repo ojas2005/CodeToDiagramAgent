@@ -43,3 +43,15 @@ def generate(args):
     print("Wrote five diagrams to {}".format(out))
     return 0
 
+
+def diff_revisions(args):
+    repo = args.repo.resolve()
+    base = build_architecture(read_revision(repo, args.base, args.max_files, args.max_bytes))
+    head = build_architecture(read_revision(repo, args.head, args.max_files, args.max_bytes))
+    changes = compare(base, head)
+    out = args.out or repo / "docs" / "diagrams"
+    updated = update_changed_diagrams(head, changes, out, repo)
+    (out / "CHANGES.md").write_text(render_change_report(base, head, changes), encoding="utf-8")
+    print("Updated {} diagrams in {}".format(len(updated), out))
+    return 0
+
