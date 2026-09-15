@@ -21,8 +21,6 @@ def parser():
     generate.add_argument("--out", type=Path, help="Output directory (default: repo/docs/diagrams)")
     generate.add_argument("--max-files", type=int, default=400)
     generate.add_argument("--max-bytes", type=int, default=256000)
-    return top
-
     diff = commands.add_parser("diff", help="Compare two commits and update changed diagrams")
     diff.add_argument("--repo", required=True, type=Path)
     diff.add_argument("--base", required=True, help="Base Git revision")
