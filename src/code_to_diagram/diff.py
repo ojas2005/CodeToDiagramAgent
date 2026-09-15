@@ -74,3 +74,20 @@ def render_change_report(base: Architecture, head: Architecture,
     lines.append("Changes reflect detected structure; review the source for behavior changes.")
     return "\n".join(lines) + "\n"
 
+
+def update_changed_diagrams(head: Architecture, changes: Dict[str, DiagramChange],
+                            out_dir: Path, source_root: Path) -> List[str]:
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    prefix = os.path.relpath(Path(source_root).resolve(), out_dir.resolve())
+    updated = []
+    for kind in DIAGRAM_TYPES:
+        if not changes[kind].changed:
+            continue
+        diagram = head.diagrams[kind]
+        (out_dir / (kind + ".mmd")).write_text(render_mermaid(diagram), encoding="utf-8")
+        (out_dir / (kind + ".md")).write_text(render_markdown(diagram, prefix), encoding="utf-8")
+        updated.append(kind)
+    (out_dir / "changes.json").write_text(json.dumps(
+        {kind: changes[kind].to_dict() for kind in DIAGRAM_TYPES}, indent=2) + "\n", encoding="utf-8")
+    return updated
